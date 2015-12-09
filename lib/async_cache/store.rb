@@ -1,8 +1,10 @@
+require 'sidekiq/api'
+
 module AsyncCache
   class Store
     attr_accessor :backend
 
-    def initialize(opts)
+    def initialize(opts = {})
       @backend = opts[:backend] || Rails.cache
     end
 
@@ -58,7 +60,7 @@ module AsyncCache
 			when needs_regen && !has_workers?
 				# No workers available to regnerate, so do it ourselves; we'll log a
 				# warning message that we can alert on
-				Rails.logger.warn "No Sidekiq workers running to handle queue '#{target_queue}'"
+				# Rails.logger.warn "No Sidekiq workers running to handle queue '#{target_queue}'"
 				:generate
 			when needs_regen
 				:enqueue
@@ -81,7 +83,7 @@ module AsyncCache
 		end
 
 		def enqueue_generation(key:, version:, expires_in:, block:, arguments:)
-      AsyncCacheSidekiqWorker.perform_async key, version, expires_in, block, arguments
+      AsyncCacheSidekiqWorker.perform_async key, version, expires_in, arguments, block.to_source
 		end
 
     private

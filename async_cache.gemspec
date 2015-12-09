@@ -15,6 +15,9 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'sourcify', '~> 0.5.0'
 
+  s.add_development_dependency 'rails',   '~> 4.2.4'
+  s.add_development_dependency 'sidekiq', '~> 3.5.2'
+
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- test/*`.split("\n")
 end
