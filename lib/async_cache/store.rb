@@ -1,11 +1,12 @@
-require 'sidekiq/api'
-
 module AsyncCache
   class Store
-    attr_accessor :backend
+    attr_accessor :backend, :worker_klass
 
     def initialize(opts = {})
-      @backend = opts[:backend] || AsyncCache.backend
+      raise ArgumentError, 'Missing :worker_klass option' unless opts[:worker_klass]
+
+      @backend      = opts[:backend] || AsyncCache.backend
+      @worker_klass = opts[:worker_klass]
     end
 
     def fetch(locator, version, options = {}, &block)
@@ -57,10 +58,10 @@ module AsyncCache
       when needs_regen && synchronous_regen
         # Caller has indicated we should synchronously regenerate
         :generate
-      when needs_regen && !has_workers?
+      when needs_regen && !worker_klass.has_workers?
         # No workers available to regnerate, so do it ourselves; we'll log a
         # warning message that we can alert on
-        AsyncCache.logger.warn "No Sidekiq workers running to handle queue '#{target_queue}'"
+        AsyncCache.logger.warn "No workers running to handle queue '#{worker_klass.target_queue}'"
         :generate
       when needs_regen
         :enqueue
@@ -83,30 +84,12 @@ module AsyncCache
     end
 
     def enqueue_generation(key:, version:, expires_in:, block:, arguments:)
-      AsyncCache::Workers::SidekiqWorker.perform_async key, version, expires_in, arguments, block.to_source
+      worker_klass.enqueue_generation key, version, expires_in, arguments, block.to_source
     end
 
     private
 
-      def target_queue
-        AsyncCache::Workers::SidekiqWorker.sidekiq_options['queue'].to_s
-      end
-
-      # Use the Sidekiq API to see if there are worker processes available to
-      # handle the async cache jobs queue.
-      def has_workers?
-        processes = Sidekiq::ProcessSet.new.to_a
-        queues_being_processed = processes.flat_map { |p| p['queues'] }
-
-        if queues_being_processed.include? target_queue
-          true
-        else
-          false
-        end
-      end
-
-      # Ensure the arguments are primitives, we don't want to be sending complex
-      # data through Sidekiq!
+      # Ensure the arguments are primitives
       def check_arguments arguments
         arguments.each_with_index do |argument, index|
           next if argument.is_a? Numeric

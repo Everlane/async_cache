@@ -1,6 +1,14 @@
 require 'spec_helper'
 
 describe AsyncCache::Store do
+
+  subject do
+    AsyncCache::Store.new(
+      backend:      Rails.cache,
+      worker_klass: AsyncCache::Workers::SidekiqWorker
+    )
+  end
+
   context 'caching' do
     def stub_not_present(key)
       expect(Rails.cache).to receive(:read).with(key).and_return(nil)
@@ -8,10 +16,6 @@ describe AsyncCache::Store do
 
     def stub_present(key, value)
       expect(Rails.cache).to receive(:read).with(key).and_return([value, 0])
-    end
-
-    subject do
-      AsyncCache::Store.new backend: Rails.cache
     end
 
     before(:each) do
@@ -37,7 +41,7 @@ describe AsyncCache::Store do
     it 'returns the stale value and enqueues the worker if entry is present and timestamp is changed' do
       # It will try to check that workers are present, so we need to make that
       # check be a no-op
-      allow(subject).to receive(:has_workers?).and_return(true)
+      allow(subject.worker_klass).to receive(:has_workers?).and_return(true)
 
       old_value  = 'old!'
       timestamp  = Time.now
@@ -51,7 +55,7 @@ describe AsyncCache::Store do
       stub_present cache_key, 'old!'
 
       # Expecting it to call the worker with the block to compute the new value
-      expect(AsyncCache::Workers::SidekiqWorker).to receive(:perform_async).with(cache_key, timestamp.to_i, expires_in, arguments, anything) do |_, _, _, block_arguments, block_source|
+      expect(subject.worker_klass).to receive(:enqueue_generation).with(cache_key, timestamp.to_i, expires_in, arguments, anything) do |_, _, _, block_arguments, block_source|
         # Check the the block behaves correctly
         expect(eval(block_source).call(*block_arguments)).to eql 2
       end
@@ -110,7 +114,7 @@ describe AsyncCache::Store do
       end
 
       it 'enqueues when not told to synchronously-regenerate' do
-        allow(subject).to receive(:has_workers?).and_return(true)
+        allow(subject.worker_klass).to receive(:has_workers?).and_return(true)
 
         expect(
           subject.determine_strategy(
@@ -122,7 +126,7 @@ describe AsyncCache::Store do
       end
 
       it 'generates instead of enqueueing when workers are not available' do
-        allow(subject).to receive(:has_workers?).and_return(false)
+        allow(subject.worker_klass).to receive(:has_workers?).and_return(false)
 
         expect(
           subject.determine_strategy(
@@ -148,13 +152,13 @@ describe AsyncCache::Store do
 
   describe '#has_workers?' do
     it 'returns false if no Sidekiq queues are available' do
-      allow(subject).to receive(:target_queue).and_return('good_queue')
+      allow(subject.worker_klass).to receive(:target_queue).and_return('good_queue')
 
       allow_any_instance_of(Sidekiq::ProcessSet).to receive(:to_a).and_return([
         { 'queues' => ['bad_queue'] }
       ])
 
-      expect(subject.send :has_workers?).to eql false
+      expect(subject.worker_klass.send :has_workers?).to eql false
     end
   end
 
