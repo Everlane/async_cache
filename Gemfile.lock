@@ -1,0 +1,53 @@
+PATH
+  remote: .
+  specs:
+    async_cache (0.0.1)
+      sourcify (~> 0.5.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    coderay (1.1.0)
+    diff-lcs (1.2.5)
+    file-tail (1.1.0)
+      tins (~> 1.0)
+    method_source (0.8.2)
+    pry (0.10.1)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
+    rspec-core (3.2.3)
+      rspec-support (~> 3.2.0)
+    rspec-expectations (3.2.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.2.0)
+    rspec-mocks (3.2.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.2.0)
+    rspec-support (3.2.2)
+    ruby2ruby (2.2.0)
+      ruby_parser (~> 3.1)
+      sexp_processor (~> 4.0)
+    ruby_parser (3.7.2)
+      sexp_processor (~> 4.1)
+    sexp_processor (4.6.0)
+    slop (3.6.0)
+    sourcify (0.5.0)
+      file-tail (>= 1.0.5)
+      ruby2ruby (>= 1.2.5)
+      ruby_parser (>= 2.0.5)
+      sexp_processor (>= 3.0.5)
+    tins (1.8.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  async_cache!
+  pry
+  rspec-core (~> 3.2.3)
+  rspec-expectations (~> 3.2.1)
+  rspec-mocks (~> 3.2.1)
+
+BUNDLED WITH
+   1.10.6
