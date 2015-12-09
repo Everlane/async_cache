@@ -5,7 +5,7 @@ module AsyncCache
     attr_accessor :backend
 
     def initialize(opts = {})
-      @backend = opts[:backend] || Rails.cache
+      @backend = opts[:backend] || AsyncCache.backend
     end
 
     def fetch(locator, version, options = {}, &block)
@@ -60,7 +60,7 @@ module AsyncCache
       when needs_regen && !has_workers?
         # No workers available to regnerate, so do it ourselves; we'll log a
         # warning message that we can alert on
-        # Rails.logger.warn "No Sidekiq workers running to handle queue '#{target_queue}'"
+        AsyncCache.logger.warn "No Sidekiq workers running to handle queue '#{target_queue}'"
         :generate
       when needs_regen
         :enqueue
@@ -83,13 +83,13 @@ module AsyncCache
     end
 
     def enqueue_generation(key:, version:, expires_in:, block:, arguments:)
-      AsyncCacheSidekiqWorker.perform_async key, version, expires_in, arguments, block.to_source
+      AsyncCache::Workers::SidekiqWorker.perform_async key, version, expires_in, arguments, block.to_source
     end
 
     private
 
       def target_queue
-        AsyncCacheSidekiqWorker.sidekiq_options['queue'].to_s
+        AsyncCache::Workers::SidekiqWorker.sidekiq_options['queue'].to_s
       end
 
       # Use the Sidekiq API to see if there are worker processes available to

@@ -51,7 +51,7 @@ describe AsyncCache::Store do
       stub_present cache_key, 'old!'
 
       # Expecting it to call the worker with the block to compute the new value
-      expect(AsyncCacheSidekiqWorker).to receive(:perform_async).with(cache_key, timestamp.to_i, expires_in, arguments, anything) do |_, _, _, block_arguments, block_source|
+      expect(AsyncCache::Workers::SidekiqWorker).to receive(:perform_async).with(cache_key, timestamp.to_i, expires_in, arguments, anything) do |_, _, _, block_arguments, block_source|
         # Check the the block behaves correctly
         expect(eval(block_source).call(*block_arguments)).to eql 2
       end
