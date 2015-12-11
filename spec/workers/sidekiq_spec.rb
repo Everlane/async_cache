@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'async_cache/workers/sidekiq'
 
 describe AsyncCache::Workers::SidekiqWorker do
   subject do
