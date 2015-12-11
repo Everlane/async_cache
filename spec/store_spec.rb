@@ -159,16 +159,4 @@ describe AsyncCache::Store do
 
   end # describe #determine_strategy
 
-  describe '#has_workers?' do
-    it 'returns false if no Sidekiq queues are available' do
-      allow(subject.worker_klass).to receive(:target_queue).and_return('good_queue')
-
-      allow_any_instance_of(Sidekiq::ProcessSet).to receive(:to_a).and_return([
-        { 'queues' => ['bad_queue'] }
-      ])
-
-      expect(subject.worker_klass.send :has_workers?).to eql false
-    end
-  end
-
 end
