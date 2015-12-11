@@ -2,19 +2,17 @@ require 'sidekiq/api'
 
 module AsyncCache
   module Workers
-    class SidekiqWorker
+    class SidekiqWorker < Base
       include ::Sidekiq::Worker
 
       # Only allow one job per set of arguments to ever be in the queue
       sidekiq_options :unique => :until_executed
 
-      def self.target_queue
-        AsyncCache::Workers::SidekiqWorker.sidekiq_options['queue'].to_s
-      end
-
       # Use the Sidekiq API to see if there are worker processes available to
       # handle the async cache jobs queue.
       def self.has_workers?
+        target_queue = self.sidekiq_options['queue'].to_s
+
         processes = Sidekiq::ProcessSet.new.to_a
         queues_being_processed = processes.flat_map { |p| p['queues'] }
 
@@ -25,7 +23,7 @@ module AsyncCache
         end
       end
 
-      def self.enqueue_generation(key, version, expires_in, arguments, block)
+      def self.enqueue_async_job(key:, version:, expires_in:, block:, arguments:)
         self.perform_async key, version, expires_in, arguments, block
       end
 
@@ -38,7 +36,7 @@ module AsyncCache
       def perform key, version, expires_in, block_arguments, block_source
         t0 = Time.now
 
-        _cached_data, cached_version = self.class.backend.read key
+        _cached_data, cached_version = backend.read key
         return unless version > (cached_version || 0)
 
         value = [eval(block_source).call(*block_arguments), version]

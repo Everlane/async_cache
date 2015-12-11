@@ -61,7 +61,7 @@ module AsyncCache
       when needs_regen && !worker_klass.has_workers?
         # No workers available to regnerate, so do it ourselves; we'll log a
         # warning message that we can alert on
-        AsyncCache.logger.warn "No workers running to handle queue '#{worker_klass.target_queue}'"
+        AsyncCache.logger.warn "No workers running to handle AsyncCache jobs"
         :generate
       when needs_regen
         :enqueue
@@ -84,7 +84,13 @@ module AsyncCache
     end
 
     def enqueue_generation(key:, version:, expires_in:, block:, arguments:)
-      worker_klass.enqueue_generation key, version, expires_in, arguments, block.to_source
+      worker_klass.enqueue_async_job(
+        key:        key,
+        version:    version,
+        expires_in: expires_in,
+        block:      block.to_source,
+        arguments:  arguments
+      )
     end
 
     private

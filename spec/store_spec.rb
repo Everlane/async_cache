@@ -55,7 +55,16 @@ describe AsyncCache::Store do
       stub_present cache_key, 'old!'
 
       # Expecting it to call the worker with the block to compute the new value
-      expect(subject.worker_klass).to receive(:enqueue_generation).with(cache_key, timestamp.to_i, expires_in, arguments, anything) do |_, _, _, block_arguments, block_source|
+      expect(subject.worker_klass).to receive(:enqueue_async_job).with(
+        key:        cache_key,
+        version:    timestamp.to_i,
+        expires_in: expires_in,
+        block:      anything,
+        arguments:  arguments
+      ) do |opts|
+        block_source    = opts[:block]
+        block_arguments = opts[:arguments]
+
         # Check the the block behaves correctly
         expect(eval(block_source).call(*block_arguments)).to eql 2
       end
