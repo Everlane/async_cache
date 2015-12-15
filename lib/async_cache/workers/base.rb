@@ -1,5 +1,18 @@
 module AsyncCache
   module Workers
+    def self.worker_for_name(name)
+      case name
+      when :sidekiq
+        require 'async_cache/workers/sidekiq'
+        AsyncCache::Workers::SidekiqWorker
+      when :active_job
+        require 'async_cache/workers/active_job'
+        AsyncCache::Workers::ActiveJobWorker
+      else
+        raise "Worker not found: #{name.inspect}"
+      end
+    end
+
     module Base
       # Abstract public interface to workers that process AsyncCache jobs
       def self.has_workers?

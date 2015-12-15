@@ -3,10 +3,16 @@ module AsyncCache
     attr_accessor :backend, :worker_klass
 
     def initialize(opts = {})
-      raise ArgumentError, 'Missing :worker_klass option' unless opts[:worker_klass]
+      @worker_klass =
+        if opts[:worker_klass]
+          opts[:worker_klass]
+        elsif opts[:worker]
+          AsyncCache::Workers.worker_for_name opts[:worker]
+        else
+          raise ArgumentError, 'Must have a :worker_klass or :worker option'
+        end
 
-      @backend      = opts[:backend] || AsyncCache.backend
-      @worker_klass = opts[:worker_klass]
+      @backend = opts[:backend] || AsyncCache.backend
     end
 
     def fetch(locator, version, options = {}, &block)

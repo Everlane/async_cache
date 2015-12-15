@@ -5,8 +5,8 @@ describe AsyncCache::Store do
 
   subject do
     AsyncCache::Store.new(
-      backend:      Rails.cache,
-      worker_klass: AsyncCache::Workers::SidekiqWorker
+      backend: Rails.cache,
+      worker:  :sidekiq
     )
   end
 
