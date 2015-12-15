@@ -14,6 +14,42 @@ Async-cache follows a straightforward strategy for determining which action to t
 
 The implementation includes a few nuances to the strategy: such as checking if workers are running and allowing clients to specify that it should always synchronously-regenerate (useful in things like CMSes where you always want to immediately render the latest version to the user editing it).
 
+### Cache Structure
+
+Async-caching requires a different cache structure than traditional caching.
+
+In traditional caching—here using Rails idioms—the cache for the model "Thing" would look like the following:
+
+- A cache key, such as `things/123-20151210063911000000000`, where the key is comprised of the name of the model, the ID of the instance in question, and the last-modified time (`updated_at`) as an integer
+- A cache value containing the actual rendered data for that model instance
+
+In async-caching the cache must be comprised of three parts:
+
+- A cache locator, such as `things/123`
+- A version, such as `20151210063911000000000` (using the last-modified time works perfectly for this)
+- The cache value
+
+The locator must be constant in async-caching so that we can always retrieve a cache record (version and value) for the given locator. The cache record is then not just a value, but also has the metadata of the version which describes which version-of-the-locator the value applies to. By having this version metadata we're able to determine whether the cache is up-to-date or out-of-date.
+
+##### Example
+
+The following is a simplified example of how values would be cached in Rails in the traditional and async structures:
+
+```ruby
+value = compute_some_expensive_value
+
+# Traditional
+key = "things/#{thing.id}-#{thing.updated_at.to_i}"
+
+Rails.cache.write key, value
+
+# Async
+locator = "things/#{thing.id}"
+version = thing.updated_at.to_i
+
+Rails.cache.write key, [version, value]
+```
+
 ## License
 
 Released under the MIT license, see [LICENSE](LICENSE) for details.
