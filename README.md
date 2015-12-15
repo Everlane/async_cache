@@ -15,10 +15,12 @@ gem 'async_cache'
 Then set up a store and fetch from it:
 
 ```ruby
-# Storing entries in `Rails.cache` and enqueueing on Sidekiq.
+# Storing entries in `Rails.cache` and enqueueing via ActiveJob
+# (a Sidekiq worker is also available with additional
+# deduplication features).
 async_cache = AsyncCache::Store.new(
   backend: Rails.cache,
-  worker:  :sidekiq
+  worker:  :active_job
 )
 
 # Then use it to do some heavy lifting asychronously
