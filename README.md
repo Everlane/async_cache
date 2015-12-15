@@ -4,6 +4,33 @@ Caching is great, but having to block your app while you refresh the cache isn't
 
 This outlines a strategy and provides a Rails-focused implementation for asynchronously refreshing caches while serving the stale version to users to maintain responsiveness.
 
+## Usage
+
+Add the gem to your Gemfile:
+
+```ruby
+gem 'async_cache'
+```
+
+Then set up a store and fetch from it:
+
+```ruby
+# Storing entries in `Rails.cache` and enqueueing on Sidekiq.
+async_cache = AsyncCache::Store.new(
+  backend: Rails.cache,
+  worker:  :sidekiq
+)
+
+# Then use it to do some heavy lifting asychronously
+id      = params[:id]
+key     = "big_model/#{id}"
+version = BigModel.where(:id => id).pluck(:updated_at).first
+
+async_cache.fetch(key, version, arguments: [id]) do |id|
+  BigModel.find(id).to_json
+end
+```
+
 ## Strategy
 
 Async-cache follows a straightforward strategy for determining which action to take when a cache entry is fetched:
