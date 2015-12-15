@@ -33,6 +33,8 @@ async_cache.fetch(key, version, arguments: [id]) do |id|
 end
 ```
 
+For additional examples see the [`examples`](examples/) folder.
+
 ## Strategy
 
 Async-cache follows a straightforward strategy for determining which action to take when a cache entry is fetched:
