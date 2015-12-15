@@ -1,4 +1,4 @@
-# This is an example of how to use AsyncCaching in a Rails API controller; it
+# This is an example of how to use AsyncCache in a Rails API controller; it
 # is loosely based on patterns currently in use in production at Everlane.
 
 class ExamplesController < ApplicationController
@@ -29,7 +29,7 @@ end
 
 # We use presenters at Everlane as a sort of view-model. Controllers handle
 # application logic such as writing to the database or redirecting clients
-# while presenters handle loading data and rendering views.
+# while presenters handle loading data for the views and rendering views.
 
 class ExamplesPresenter < Presenter
   def initialize
