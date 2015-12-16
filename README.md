@@ -15,21 +15,24 @@ gem 'async_cache'
 Then set up a store and fetch from it:
 
 ```ruby
-# Storing entries in `Rails.cache` and enqueueing via ActiveJob
-# (a Sidekiq worker is also available with additional
-# deduplication features).
-async_cache = AsyncCache::Store.new(
+# (in config/initializers/async_cache.rb)
+ASYNC_CACHE = AsyncCache::Store.new(
   backend: Rails.cache,
   worker:  :active_job
 )
 
-# Then use it to do some heavy lifting asychronously
-id      = params[:id]
-key     = "big_model/#{id}"
-version = BigModel.where(:id => id).pluck(:updated_at).first
+# (in app/controllers/things_controller.rb)
+def show
+  # Then use it to do some heavy lifting asychronously
+  id      = params[:id]
+  key     = "thing/#{id}"
+  version = Thing.select(:updated_at).find(id).updated_at
 
-async_cache.fetch(key, version, arguments: [id]) do |id|
-  BigModel.find(id).to_json
+  json = ASYNC_CACHE.fetch(key, version, arguments: [id]) do |id|
+    Thing.find(id).to_json
+  end
+
+  render body: json, content_type: 'application/json'
 end
 ```
 
