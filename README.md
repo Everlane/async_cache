@@ -36,7 +36,11 @@ def show
 end
 ```
 
-For additional examples see the [`examples`](examples/) folder.
+For additional examples see the [`examples`](examples/) directory.
+
+#### Workers
+
+Async-cache provides a generic [ActiveJob](https://github.com/rails/rails/tree/master/activejob) worker as well as a specialized [Sidekiq](https://github.com/mperham/sidekiq) worker (see the [`workers`](lib/async_cache/workers/) directory). The ActiveJob worker should work out of the box is most cases. The Sidekiq worker provides special deduplication functionality which should significantly reduce the queue size/worker process load for high-traffic sites.
 
 ## Strategy
 
