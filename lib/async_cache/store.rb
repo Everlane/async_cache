@@ -77,9 +77,11 @@ module AsyncCache
     end
 
     def generate_and_cache(key:, version:, expires_in:, block:, arguments:)
+      block_source = block.to_source
+
       # Mimic the destruction-of-scope behavior of the worker in development
       # so it will *fail* for developers if they try to depend upon scope
-      block = eval(block.to_source)
+      block = eval(block_source)
 
       data = block.call(*arguments)
 
