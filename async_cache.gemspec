@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'pry',                 '~> 0.10.1'
   s.add_development_dependency 'simplecov',           '~> 0.9.2'
   s.add_development_dependency 'redis-activesupport', '~> 4.1.5'
+  s.add_development_dependency 'httparty',            '~> 0.13.7'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- test/*`.split("\n")
