@@ -5,7 +5,7 @@ require 'rails'
 require 'redis-activesupport'
 
 Rails.cache  = ActiveSupport::Cache::RedisStore.new
-Rails.logger = Logger.new($stdout).tap { |log| log.level = Logger::ERROR }
+Rails.logger = Logger.new($stdout).tap { |log| log.level = Logger::WARN }
 
 Sidekiq.configure_client do |config|
   config.redis = { :namespace => 'x', :size => 1 }

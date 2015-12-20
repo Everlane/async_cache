@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 commands = [
-  'bundle exec sidekiq -r ./spec/integration/support/sidekiq.rb',
+  'bundle exec sidekiq -c 2 -r ./spec/integration/support/sidekiq.rb',
   'bundle exec ruby spec/integration/support/sinatra.rb'
 ]
 

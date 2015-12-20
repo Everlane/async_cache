@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'securerandom'
 
 require_relative './sidekiq'
 
@@ -13,10 +14,10 @@ def get_file_version(path)
 end
 
 get '/' do
-  locator = 'x'
+  locator = 'y'
   version = get_file_version File.join(File.dirname(__FILE__), 'version.txt')
 
   store.fetch(locator, version) do
-    Time.now.to_s
+    SecureRandom.uuid
   end
 end
