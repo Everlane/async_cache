@@ -3,6 +3,9 @@ language: ruby
 cache: bundler
 rvm: 2.2.1
 
+services:
+  - redis-server
+
 before_script:
   - bundle exec ruby spec/integration/support/run_all.rb
   - sleep 1
