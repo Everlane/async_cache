@@ -7,7 +7,7 @@ services:
   - redis-server
 
 before_script:
-  - bundle exec ruby spec/integration/support/run_all.rb
+  - bundle exec ruby spec/integration/support/run_all.rb &
   - sleep 1
 
 script:
