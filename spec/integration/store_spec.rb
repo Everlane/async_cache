@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'httparty'
 
-require_relative './support/sidekiq'
+require_relative './support/config'
 
 describe AsyncCache::Store do
   context '#fetch' do
