@@ -1,7 +1,7 @@
 require 'sinatra'
 require 'securerandom'
 
-require_relative './sidekiq'
+require_relative './config'
 
 store = nil
 
