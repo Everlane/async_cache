@@ -13,3 +13,6 @@ end
 Sidekiq.configure_server do |config|
   config.redis = { :namespace => 'x' }
 end
+
+LOCATOR = 'y'
+VERSION_PATH = File.join(File.dirname(__FILE__), 'version.txt')

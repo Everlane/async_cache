@@ -14,8 +14,8 @@ def get_file_version(path)
 end
 
 get '/' do
-  locator = 'y'
-  version = get_file_version File.join(File.dirname(__FILE__), 'version.txt')
+  locator = LOCATOR
+  version = get_file_version VERSION_PATH
 
   store.fetch(locator, version) do
     SecureRandom.uuid

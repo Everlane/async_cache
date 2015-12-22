@@ -6,16 +6,14 @@ require_relative './support/config'
 describe AsyncCache::Store do
   context '#fetch' do
     before(:all) do
-      @version_path = File.join(File.dirname(__FILE__), 'support', 'version.txt')
-
-      unless File.exist? @version_path
-        raise "Version file #{@version_path} doesn't exist"
+      unless File.exist? VERSION_PATH
+        raise "Version file #{VERSION_PATH} doesn't exist"
       end
     end
 
     before(:each) do
       # 'y' is the locator used in `support/sinatra.rb`.
-      Rails.cache.delete 'y'
+      Rails.cache.delete LOCATOR
     end
 
     after(:each) do
@@ -29,6 +27,10 @@ describe AsyncCache::Store do
       return response.body
     end
 
+    def touch_version_file
+      FileUtils.touch VERSION_PATH
+    end
+
     it 'serves the fresh version if the cache is empty' do
       get_endpoint
     end
@@ -36,7 +38,7 @@ describe AsyncCache::Store do
     it "serves the old version if it's cached" do
       body1 = get_endpoint
 
-      FileUtils.touch @version_path
+      touch_version_file
 
       body2 = get_endpoint
 
@@ -46,9 +48,10 @@ describe AsyncCache::Store do
     it 'serves the new version after the worker has run' do
       body1 = get_endpoint
 
-      FileUtils.touch @version_path
+      touch_version_file
 
       body2 = get_endpoint
+
       # Check again that it served the old version
       expect(body2).to eq body1
 
