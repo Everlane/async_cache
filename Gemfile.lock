@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    async_cache (1.0.0)
+    async_cache (1.0.1)
       sourcify (~> 0.5.0)
 
 GEM
@@ -200,4 +200,4 @@ DEPENDENCIES
   sinatra (~> 1.4.6)
 
 BUNDLED WITH
-   1.10.6
+   1.11.2
