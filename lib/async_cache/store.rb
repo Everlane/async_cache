@@ -109,6 +109,7 @@ module AsyncCache
           next if argument.is_a? Numeric
           next if argument.is_a? String
           next if argument.is_a? Symbol
+          next if argument.is_a? Hash
 
           raise ArgumentError, "Cannot send complex data for block argument #{index + 1}: #{argument.class.name}"
         end
