@@ -10,6 +10,12 @@ describe AsyncCache::Store do
     )
   end
 
+  it "raises if it doesn't receive a worker class" do
+    expect {
+      AsyncCache::Store.new backend: Rails.cache
+    }.to raise_error(ArgumentError)
+  end
+
   context 'caching' do
     def stub_not_present(key)
       expect(Rails.cache).to receive(:read).with(key).and_return(nil)
