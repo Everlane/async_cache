@@ -2,6 +2,12 @@ module AsyncCache
   class Store
     attr_accessor :backend, :worker_klass
 
+    # @param [Hash] opts Initialization options
+    # @option opts [Object] :backend The backend that it will read/write
+    #   entries to/from
+    # @option opts [Symbol] :worker Shorthand symbol for the worker to use,
+    #   options are `:active_job` and `:sidekiq`.
+    # @option ops [Class] :worker_klass Class of the worker to use.
     def initialize(opts = {})
       @worker_klass =
         if opts[:worker_klass]
@@ -15,6 +21,10 @@ module AsyncCache
       @backend = opts[:backend] || AsyncCache.backend
     end
 
+    # @param [String] locator The constant locator for the entry in the cache
+    # @param [Fixnum] version Version of the value identified by that locator
+    # @param [Hash] options
+    # @yield [*arguments in options[:arguments]] Called if entry out-of-date
     def fetch(locator, version, options = {}, &block)
       options = options.dup  # Duplicate to avoid side effects
       version = version.to_i # Versions must *always* be convertible to integers
@@ -103,7 +113,7 @@ module AsyncCache
 
     private
 
-      # Ensure the arguments are primitives
+      # Ensures the arguments are primitives.
       def check_arguments arguments
         arguments.each_with_index do |argument, index|
           next if argument.is_a? Numeric

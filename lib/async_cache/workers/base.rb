@@ -15,20 +15,26 @@ module AsyncCache
 
     module Base
       # Abstract public interface to workers that process AsyncCache jobs
+
+      # @return [Boolean] Returns whether or not workers are running to
+      #   process enqueue AsyncCache jobs. Return `false` if this
+      #   functionality isn't available by the underlying system.
       def self.has_workers?
         raise NotImplementedError
       end
 
+      # Public interface for enqueuing jobs. This is what is called by
+      # {AsyncCache::Store}.
       def self.enqueue_async_job(key:, version:, expires_in:, block:, arguments:)
         raise NotImplementedError
       end
 
-      # key             - String or array cache key computed by `AsyncCache`
-      # version         - Monotonically increasing integer indicating the version
-      #                   of the resource being cached
-      # expires_in      - Optional expiration to pass to the cache store
-      # block_arguments - Arguments with which to call the block
-      # block_source    - Ruby source to evaluate to produce the value
+      # @param [String] key String or array cache key computed by `AsyncCache`
+      # @param [Fixnum] version Monotonically increasing integer indicating
+      #   the version of the resource being cached
+      # @param [Fixnum] expires_in Optional expiration to pass to the cache store
+      # @param [Array] block_arguments Arguments with which to call the block
+      # @param [String] block_source Ruby source to evaluate to produce the value
       def perform key, version, expires_in, block_arguments, block_source
         t0 = Time.now
 
