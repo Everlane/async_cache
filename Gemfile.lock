@@ -122,6 +122,7 @@ GEM
       rake (>= 0.8.7)
       thor (>= 0.18.1, < 2.0)
     rake (10.4.2)
+    redcarpet (3.3.4)
     redis (3.2.1)
     redis-activesupport (4.1.5)
       activesupport (>= 3, < 5)
@@ -184,6 +185,7 @@ GEM
     tins (1.8.1)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
+    yard (0.8.7.6)
 
 PLATFORMS
   ruby
@@ -193,11 +195,13 @@ DEPENDENCIES
   httparty (~> 0.13.7)
   pry (~> 0.10.1)
   rails (~> 4.2.4)
+  redcarpet (~> 3.3.4)
   redis-activesupport (~> 4.1.5)
   rspec (~> 3.4.0)
   sidekiq (~> 3.5.2)
   simplecov (~> 0.9.2)
   sinatra (~> 1.4.6)
+  yard (~> 0.8)
 
 BUNDLED WITH
    1.11.2
