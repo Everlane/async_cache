@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    async_cache (1.0.2)
+    async_cache (1.1.0)
       sourcify (~> 0.5.0)
 
 GEM
