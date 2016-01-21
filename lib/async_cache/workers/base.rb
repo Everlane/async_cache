@@ -23,6 +23,11 @@ module AsyncCache
         raise NotImplementedError
       end
 
+      # Clear the active jobs from this worker's queue.
+      def self.clear
+        raise NotImplementedError
+      end
+
       # Public interface for enqueuing jobs. This is what is called by
       # {AsyncCache::Store}.
       def self.enqueue_async_job(key:, version:, expires_in:, block:, arguments:)

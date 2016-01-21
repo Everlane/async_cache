@@ -2,6 +2,11 @@ module AsyncCache
   class Store
     attr_accessor :backend, :worker_klass
 
+    # Global index of store instances
+    def self.stores
+      @stores ||= []
+    end
+
     # @param [Hash] opts Initialization options
     # @option opts [Object] :backend The backend that it will read/write
     #   entries to/from
@@ -19,6 +24,9 @@ module AsyncCache
         end
 
       @backend = opts[:backend] || AsyncCache.backend
+
+      # Register ourselves in the array of known store instances
+      self.class.stores << self
     end
 
     # @param [String] locator The constant locator for the entry in the cache
@@ -66,6 +74,10 @@ module AsyncCache
       end
     end
 
+    def clear
+      @worker_klass.clear
+    end
+
     def determine_strategy(has_cached_data:, needs_regen:, synchronous_regen:)
       case
       when !has_cached_data
@@ -109,6 +121,18 @@ module AsyncCache
         block:      block.to_source,
         arguments:  arguments
       )
+    end
+
+    def inspect
+      pointer_format  = '0x%014x'
+      pointer         = Kernel.sprintf pointer_format, self.object_id * 2
+      backend_pointer = Kernel.sprintf pointer_format, @backend.object_id * 2
+
+      '#<' + [
+        "#{self.class.name}:#{pointer} ",
+        "@worker_klass=#{@worker_klass.name}, ",
+        "@backend=#<#{@backend.class.name}:#{backend_pointer}>"
+      ].join('') + '>'
     end
 
     private
