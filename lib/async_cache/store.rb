@@ -1,3 +1,5 @@
+require 'digest/md5'
+
 module AsyncCache
   class Store
     attr_accessor :backend, :worker_klass
@@ -40,10 +42,17 @@ module AsyncCache
       # Expires-in must be an integer if present, nil if not
       expires_in = options[:expires_in] ? options[:expires_in].to_i : nil
 
+      block_source    = block.to_source
       block_arguments = check_arguments(options.delete(:arguments) || [])
 
+      full_key = [
+        locator,
+        Digest::MD5.hexdigest(block_source),
+        block_arguments
+      ].flatten
+
       # Serialize arguments into the full cache key
-      key = ActiveSupport::Cache.expand_cache_key Array.wrap(locator) + block_arguments
+      key = ActiveSupport::Cache.expand_cache_key full_key
 
       cached_data, cached_version = @backend.read key
 
@@ -53,23 +62,21 @@ module AsyncCache
         :synchronous_regen => options[:synchronous_regen]
       )
 
+      return cached_data if strategy == :current
+
       context = {
-        :key        => key,
-        :version    => version,
-        :expires_in => expires_in,
-        :block      => block,
-        :arguments  => block_arguments
+        :key          => key,
+        :version      => version,
+        :expires_in   => expires_in,
+        :block_source => block_source,
+        :arguments    => block_arguments
       }
 
       case strategy
       when :generate
         return generate_and_cache context
-
       when :enqueue
         enqueue_generation context
-        return cached_data
-
-      when :current
         return cached_data
       end
     end
@@ -98,9 +105,7 @@ module AsyncCache
       end
     end
 
-    def generate_and_cache(key:, version:, expires_in:, block:, arguments:)
-      block_source = block.to_source
-
+    def generate_and_cache(key:, version:, expires_in:, block_source:, arguments:)
       # Mimic the destruction-of-scope behavior of the worker in development
       # so it will *fail* for developers if they try to depend upon scope
       block = eval(block_source)
@@ -113,12 +118,12 @@ module AsyncCache
       return data
     end
 
-    def enqueue_generation(key:, version:, expires_in:, block:, arguments:)
+    def enqueue_generation(key:, version:, expires_in:, block_source:, arguments:)
       worker_klass.enqueue_async_job(
         key:        key,
         version:    version,
         expires_in: expires_in,
-        block:      block.to_source,
+        block:      block_source,
         arguments:  arguments
       )
     end

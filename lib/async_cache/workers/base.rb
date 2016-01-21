@@ -1,3 +1,5 @@
+require 'active_support/core_ext/array/wrap'
+
 module AsyncCache
   module Workers
     def self.worker_for_name(name)
@@ -41,8 +43,6 @@ module AsyncCache
       # @param [Array] block_arguments Arguments with which to call the block
       # @param [String] block_source Ruby source to evaluate to produce the value
       def perform key, version, expires_in, block_arguments, block_source
-        t0 = Time.now
-
         _cached_data, cached_version = backend.read key
         return unless version > (cached_version || 0)
 
