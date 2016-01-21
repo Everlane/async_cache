@@ -2,6 +2,11 @@ module AsyncCache
   class Store
     attr_accessor :backend, :worker_klass
 
+    # Global index of store instances
+    def self.stores
+      @stores ||= []
+    end
+
     # @param [Hash] opts Initialization options
     # @option opts [Object] :backend The backend that it will read/write
     #   entries to/from
@@ -19,6 +24,9 @@ module AsyncCache
         end
 
       @backend = opts[:backend] || AsyncCache.backend
+
+      # Register ourselves in the array of known store instances
+      self.class.stores << self
     end
 
     # @param [String] locator The constant locator for the entry in the cache
@@ -64,6 +72,10 @@ module AsyncCache
       when :current
         return cached_data
       end
+    end
+
+    def clear
+      @worker_klass.clear
     end
 
     def determine_strategy(has_cached_data:, needs_regen:, synchronous_regen:)

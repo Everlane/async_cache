@@ -11,6 +11,10 @@ module AsyncCache
         true
       end
 
+      def self.clear
+        raise NotImplementedError, 'ActiveJob does not support clearing queues'
+      end
+
       def self.enqueue_async_job(key:, version:, expires_in:, block:, arguments:)
         self.perform_later key, version, expires_in, arguments, block
       end

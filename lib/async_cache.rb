@@ -21,3 +21,4 @@ end
 require 'async_cache/version'
 require 'async_cache/store'
 require 'async_cache/workers/base'
+require 'async_cache/railtie' if defined?(Rails)
