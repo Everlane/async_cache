@@ -123,6 +123,18 @@ module AsyncCache
       )
     end
 
+    def inspect
+      pointer_format  = '0x%014x'
+      pointer         = Kernel.sprintf pointer_format, self.object_id * 2
+      backend_pointer = Kernel.sprintf pointer_format, @backend.object_id * 2
+
+      '#<' + [
+        "#{self.class.name}:#{pointer} ",
+        "@worker_klass=#{@worker_klass.name}, ",
+        "@backend=#<#{@backend.class.name}:#{backend_pointer}>"
+      ].join('') + '>'
+    end
+
     private
 
       # Ensures the arguments are primitives.
