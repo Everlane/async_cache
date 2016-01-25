@@ -45,14 +45,11 @@ module AsyncCache
       block_source    = block.to_source
       block_arguments = check_arguments(options.delete(:arguments) || [])
 
-      full_key = [
-        locator,
-        Digest::MD5.hexdigest(block_source),
+      # Serialize arguments into the full cache key
+      key = ActiveSupport::Cache.expand_cache_key [
+        Store.base_cache_key(locator, block_source),
         block_arguments
       ].flatten
-
-      # Serialize arguments into the full cache key
-      key = ActiveSupport::Cache.expand_cache_key full_key
 
       cached_data, cached_version = @backend.read key
 
@@ -138,6 +135,16 @@ module AsyncCache
         "@worker_klass=#{@worker_klass.name}, ",
         "@backend=#<#{@backend.class.name}:#{backend_pointer}>"
       ].join('') + '>'
+    end
+
+    # Build the base part of the cache key with the locator and the digest
+    # of the block source. This ensures that if the implementation (block)
+    # changes then the cache key will also change.
+    def self.base_cache_key(locator, block_source)
+      ActiveSupport::Cache.expand_cache_key [
+        locator,
+        Digest::MD5.hexdigest(block_source)
+      ]
     end
 
     private
