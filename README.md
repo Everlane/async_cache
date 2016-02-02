@@ -1,8 +1,8 @@
 # async_cache
 
-Caching is great, but having to block your app while you refresh the cache isn't so great, especially when it takes a long time to regenerate that cache entry.
+Async caching lets you serve slightly-stale data immediately while generating an up-to-date version in the background.
 
-This outlines a strategy and provides a Rails-focused implementation for asynchronously refreshing caches while serving the stale version to users to maintain responsiveness.
+This provides a Ruby implementation of the async caching strategy (detailed below). It works with both Sidekiq (recommended) and ActiveJob systems. Usage examples are provided below and in the [`examples`](examples/) directory.
 
 ## Usage
 
