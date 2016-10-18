@@ -2,9 +2,10 @@ require 'spec_helper'
 require 'async_cache/workers/sidekiq'
 
 describe AsyncCache::Store do
+  Store = AsyncCache::Store
 
   subject do
-    AsyncCache::Store.new(
+    Store.new(
       backend: Rails.cache,
       worker:  :sidekiq
     )
@@ -12,7 +13,7 @@ describe AsyncCache::Store do
 
   it "raises if it doesn't receive a worker class" do
     expect {
-      AsyncCache::Store.new backend: Rails.cache
+      Store.new backend: Rails.cache
     }.to raise_error(ArgumentError)
   end
 
@@ -32,20 +33,26 @@ describe AsyncCache::Store do
     end
 
     it "synchronously calls #fetch if entry isn't present" do
-      stub_not_present @key
+      block     = proc { 'something' }
+      cache_key = Store.base_cache_key @key, block.to_source
+
+      stub_not_present cache_key
 
       version    = Time.now.to_i
       expires_in = 1.minute
 
       # Expect another synchronous call with a block to compute the value
-      expect(Rails.cache).to receive(:write).with(@key, ['something', version], {:expires_in => expires_in}).and_call_original
+      expect(Rails.cache).to receive(:write).with(cache_key, ['something', version], {:expires_in => expires_in}).and_call_original
 
-      fetched_value = subject.fetch(@key, version, :expires_in => expires_in) { 'something' }
+      fetched_value = subject.fetch(@key, version, :expires_in => expires_in, &block)
 
       expect(fetched_value).to eql 'something'
     end
 
     it 'returns the stale value and enqueues the worker if entry is present and timestamp is changed' do
+      block    = proc { |private_argument| private_argument * 2 }
+      base_key = Store.base_cache_key @key, block.to_source
+
       # It will try to check that workers are present, so we need to make that
       # check be a no-op
       allow(subject.worker_klass).to receive(:has_workers?).and_return(true)
@@ -57,7 +64,7 @@ describe AsyncCache::Store do
 
       # Cache key is composed of *both* the key and the arguments given to the
       # block since those arguments determine the output of the block
-      cache_key = ActiveSupport::Cache.expand_cache_key([@key] + arguments)
+      cache_key = ActiveSupport::Cache.expand_cache_key([base_key] + arguments)
 
       stub_present cache_key, 'old!'
 
@@ -76,20 +83,21 @@ describe AsyncCache::Store do
         expect(eval(block_source).call(*block_arguments)).to eql 2
       end
 
-      fetched_value = subject.fetch(@key, timestamp, :expires_in => expires_in, :arguments => arguments) do |private_argument|
-        private_argument * 2
-      end
+      fetched_value = subject.fetch(@key, timestamp, :expires_in => expires_in, :arguments => arguments, &block)
 
       # Check that it immediately returns the stale value
       expect(fetched_value).to eql old_value
     end
 
     it "returns the current value if timestamp isn't changed" do
-      stub_present @key, 'value'
+      block     = proc { 'bad!' }
+      cache_key = Store.base_cache_key @key, block.to_source
+
+      stub_present cache_key, 'value'
 
       timestamp = 0 # `stub_present` returns a timestamp of 0
 
-      expect(subject.fetch(@key, timestamp, :expires_in => 1.minute) { 'bad!' }).to eql 'value'
+      expect(subject.fetch(@key, timestamp, :expires_in => 1.minute, &block)).to eql 'value'
     end
 
   end # context caching
