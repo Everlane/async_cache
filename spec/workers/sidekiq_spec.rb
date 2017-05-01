@@ -44,4 +44,34 @@ describe AsyncCache::Workers::SidekiqWorker do
       )
     end
   end
+
+  describe AsyncCache::Workers::SidekiqWorker::Options do
+    subject do
+      AsyncCache::Workers::SidekiqWorker::Options
+    end
+
+    before do
+      # Set by `spec_helper.rb`.
+      hide_const 'SidekiqUniqueJobs'
+
+      class Worker
+      end
+    end
+
+    it 'sets correct option for `sidekiq-unique-jobs`' do
+      stub_const 'SidekiqUniqueJobs', Module.new
+
+      expect(Worker).to receive(:sidekiq_options).with(unique: :until_executed)
+
+      Worker.include subject
+    end
+
+    it 'sets correct options for Sidekiq Enterprise' do
+      stub_const 'Sidekiq::Enterprise', Module.new
+
+      expect(Worker).to receive(:sidekiq_options).with(unique_for: 10.minutes)
+
+      Worker.include subject
+    end
+  end
 end
