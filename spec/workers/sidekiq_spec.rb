@@ -6,6 +6,13 @@ describe AsyncCache::Workers::SidekiqWorker do
     AsyncCache::Workers::SidekiqWorker
   end
 
+  describe '.sidekiq_options' do
+    # See `spec_helper.rb` which makes it think the gem is loaded.
+    it 'has the uniqueness option for `sidekiq-unique-jobs`' do
+      expect(subject.sidekiq_options_hash).to include 'unique'
+    end
+  end
+
   describe '::has_workers?' do
     it 'returns false if no Sidekiq queues are available' do
       allow(subject).to receive(:sidekiq_options).and_return({'queue' => 'good_queue'})
