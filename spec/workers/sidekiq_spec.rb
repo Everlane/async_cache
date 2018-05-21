@@ -69,7 +69,7 @@ describe AsyncCache::Workers::SidekiqWorker do
     it 'sets correct options for Sidekiq Enterprise' do
       stub_const 'Sidekiq::Enterprise', Module.new
 
-      expect(Worker).to receive(:sidekiq_options).with(unique_for: 10.minutes)
+      expect(Worker).to receive(:sidekiq_options).with(unique_for: AsyncCache.options[:uniqueness_timeout])
 
       Worker.include subject
     end

@@ -11,7 +11,7 @@ module AsyncCache
       module Options
         def self.included(mod)
           if defined?(Sidekiq::Enterprise)
-            mod.sidekiq_options unique_for: 10.minutes
+            mod.sidekiq_options unique_for: AsyncCache.options[:uniqueness_timeout]
           elsif defined?(SidekiqUniqueJobs)
             # Only allow one job per set of arguments to ever be in the queue
             mod.sidekiq_options unique: :until_executed
