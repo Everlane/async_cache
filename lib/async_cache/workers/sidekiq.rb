@@ -7,8 +7,19 @@ module AsyncCache
       include Base
       include Sidekiq::Worker
 
-      # Only allow one job per set of arguments to ever be in the queue
-      sidekiq_options :unique => :until_executed
+      # Pulled out into a module so it can be tested.
+      module Options
+        def self.included(mod)
+          if defined?(Sidekiq::Enterprise)
+            mod.sidekiq_options unique_for: AsyncCache.options[:uniqueness_timeout]
+          elsif defined?(SidekiqUniqueJobs)
+            # Only allow one job per set of arguments to ever be in the queue
+            mod.sidekiq_options unique: :until_executed
+          end
+        end
+      end
+
+      include Options
 
       # Use the Sidekiq API to see if there are worker processes available to
       # handle the async cache jobs queue.
