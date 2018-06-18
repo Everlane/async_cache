@@ -2,8 +2,9 @@ require 'sourcify'
 
 module AsyncCache
   DEFAULT_OPTIONS = {
-    # How long Sidekiq Enterprise should hold a uniqueness lock.
-    uniqueness_timeout: 10.minutes,
+    # How long Sidekiq Enterprise should hold a uniqueness lock. The default
+    # is 10 minutes.
+    uniqueness_timeout: 600,
   }
 
   def self.options
